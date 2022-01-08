@@ -1,0 +1,58 @@
+#
+#Deploy Nested ESXi using PXE server
+#Written by sourav.mitra1990@gmail.com
+#For more details: https://www.virtualmystery.info/post/powercli-nas-your-on-demand-nested-esxi-pxe-server#
+#www.virtualmystery.info
+#
+
+function Deploy-PxeBootNestedESXi{
+    #Define all parameters required
+    Param (
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$server,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$serveruser,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$serverpass,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$NestedEsxiName,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$datastore,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$NestedDiskSpaceGB,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$NestedCpu,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$NestedMemGB,
+            [Parameter(Mandatory=$true)][string][ValidateNotNullorEmpty()]$NestedEsxiNW
+            )
+
+                #Connect to target Server
+                Connect-VIServer -Server $server -User $serveruser -Password $serverpass |Out-Null
+
+                #Create the VM
+                New-VM -VMHost $vmhost -Name $NestedEsxiName -Datastore $datastore -DiskGB $NestedDiskSpaceGB -NumCpu $NestedCpu `
+                -MemoryGB $NestedMemGB -NetworkName $NestedEsxiNW -GuestId "vmkernel7Guest" | Out-Null
+                #
+                #Re-configure to allow for NestedEsxi
+                #
+                $vmview= Get-VM -Name $NestedEsxiName |Get-View
+
+                #Enable Hardware Virtualization
+                $config = New-Object VMware.Vim.VirtualMachineConfigSpec
+                $config.NestedHVEnabled = $true
+                $vmview.ReconfigVM_Task($config) |Out-Null
+
+                #Set boot to uefi
+                $config = New-Object VMware.Vim.VirtualMachineConfigSpec
+                $config.Firmware = 'efi'
+                $vmview.ReconfigVM_Task($config) |Out-Null
+
+                #Change Network Adapter to VMXNET3
+                Get-VM -Name $NestedEsxiName| Get-NetworkAdapter| Set-NetworkAdapter -Type Vmxnet3 -StartConnected: $true -Confirm: $false|Out-Null
+
+                Start-Sleep -Seconds 10
+
+                #PowerUp the VM,PXE boot will start automatically, provided you have already configured your NAS to support PXE
+                Get-VM -Name $NestedEsxiName|Start-VM |Out-Null
+
+                #Inform User:
+                Write-Host "NestedHost has been created, PXE ESXi installation will begin shortly. Please switch to the console view" `
+                -BackgroundColor Cyan -ForegroundColor Black
+                
+                #Disconnect the server
+                Disconnect-VIServer -Server * -Confirm:$false |Out-Null
+
+}
