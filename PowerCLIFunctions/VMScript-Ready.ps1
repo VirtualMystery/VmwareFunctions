@@ -2,6 +2,7 @@
 #Funtion to check Invoke-VMScript can be executed on target VM
 ##Version V1.0 ##
 ##Author: sourav.mitra1990@gmail.com##
+##https://www.virtualmystery.info/post/check-a-vm-is-ready-for-invoke-vmscript##
 ##Date: 04/24/2021##
 
 Function VMScript-Ready {
