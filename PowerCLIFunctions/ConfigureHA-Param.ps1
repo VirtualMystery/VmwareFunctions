@@ -1,6 +1,7 @@
 ##Function to set HA configuration parameters
 ##Written by: sourav.mitra1990@gmail.com
 ##For more infomration: https://www.virtualmystery.info/post/powercli-function-to-configure-ha-parameters#
+##Createdon:04/07/2021
 ##This function assumes user is connected to a vcenter instance
 ##Target hosts are in a cluster setup with HA enabled
 #Begin function
