@@ -1,6 +1,6 @@
 #Function to enable and configure DRS in a cluster
 #Written by sourav.mitra1990@gmail.com
-#For more details: https://www.virtualmystery.info/post/##
+#For more details: https://www.virtualmystery.info/post/powercli-function-to-enable-and-configure-cluster-drs##
 #CreatedOn: 06/02/2022
 #www.virtualmystery.info
 
